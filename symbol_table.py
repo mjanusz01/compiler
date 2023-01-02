@@ -8,15 +8,18 @@ class Procedure:
         return "Procedure : " + str(self.name)
     
 class Var:
-    def __init__(self, name, memory_offset, in_procedure, proc_name):
+    def __init__(self, name, memory_offset, in_procedure):
         self.name = name
         self.memory_offset = memory_offset
         self.initialized = False
         self.in_procedure = in_procedure
-        self.proc_name = proc_name
+        self.proc_name = "-1"
     
+    def set_proc_name(self, proc_name):
+        self.proc_name = proc_name
+
     def __repr__(self):
-        return "var name: " + str(self.name) + " memory : " + str(self.memory_offset) + "proc : " + str(self.in_procedure) + "proc name : " + str(self.proc_name)
+        return "var name: " + str(self.name) + " memory : " + str(self.memory_offset) + " proc : " + str(self.in_procedure) + " proc name : " + str(self.proc_name)
 
 class SymbolTable:
     def __init__(self):
@@ -24,12 +27,15 @@ class SymbolTable:
         self.procedures = []
         self.memory_offset = 0
 
-    def add_variable(self, name):
-        self.variables = self.variables + [Var(name, self.memory_offset)]
+    def add_variable(self, name, in_proc):
+        self.variables = self.variables + [Var(name, self.memory_offset, in_proc)]
         self.memory_offset = self.memory_offset + 1
     
     def add_procedure(self,name):
         self.procedures = self.procedures + [Procedure(name)]
+        for var in self.variables:
+            if var.in_procedure == True and var.proc_name == "-1":
+                var.proc_name = name
     
     def print_vars(self):
         for var in self.variables:

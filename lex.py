@@ -77,6 +77,7 @@ class CompilatorParser(Parser):
     tokens = CompilatorLexer.tokens
     literals = CompilatorLexer.literals
     symbol_table = SymbolTable()
+    processed_procedure = ""
 
     @_('procedures main')
     def whole_program(self, p):
@@ -98,13 +99,28 @@ class CompilatorParser(Parser):
     def main(self, p):
         return "MAIN PROGRAM"
 
-    @_('identifier LBR declarations RBR')
+    @_('identifier LBR proc_declarations RBR')
     def proc_head(self, p):
+        print("set name")
         self.symbol_table.add_procedure(p[0])
+        self.processed_procedure = str(p[0])
         return "IDENTIFIER"
 
+    @_('proc_declarations COMMA proc_id')
+    def proc_declarations(self, p):
+        return "EEE"
+
+    @_('proc_id')
+    def proc_declarations(self,p):
+        return "EEEE"
+        
     @_('exec_id LBR exec_declarations RBR')
     def proc_head_execute(self, p):
+        return "EXEC"
+
+    @_('IDENTIFIER')
+    def proc_id(self, p):
+        self.symbol_table.add_variable(p[0],True)
         return "EXEC"
 
     @_('exec_declarations COMMA exec_id')
@@ -121,12 +137,12 @@ class CompilatorParser(Parser):
 
     @_('declarations COMMA identifier')
     def declarations(self, p):
-        self.symbol_table.add_variable(p[2])
+        self.symbol_table.add_variable(p[2], False)
         return "DECLARATIONS"
 
     @_('identifier')
     def declarations(self, p):
-        self.symbol_table.add_variable(p[0])
+        self.symbol_table.add_variable(p[0], False)
         return "DECLARATIONS"
 
     @_('commands command')
