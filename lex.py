@@ -4,8 +4,7 @@ import sys
 
 class CompilatorLexer(Lexer):
     
-    tokens = {PROGRAM, IS,
-    PROCEDURE,
+    tokens = {PROGRAM, IS, PROCEDURE,
     VAR, ENDIF,
     BEGIN, END, 
     IF, THEN, ELSE,
@@ -29,6 +28,7 @@ class CompilatorLexer(Lexer):
 
     PROGRAM = r"PROGRAM"
     PROCEDURE = r"PROCEDURE"
+    ENDWHILE = r"ENDWHILE"
     IS = r"IS"
     VAR = r"VAR"
     BEGIN = r"BEGIN"
@@ -40,7 +40,7 @@ class CompilatorLexer(Lexer):
 
     WHILE = r"WHILE"
     DO = r"DO"
-    ENDWHILE = r"ENDWHILE"
+    
     REPEAT = r"REPEAT"
     UNTIL = r"UNTIL"
 
@@ -70,7 +70,6 @@ class CompilatorLexer(Lexer):
 
     @_(r'\d+')
     def NUM(self, t):
-        print("tu wchodze")
         t.value = int(t.value)
         return t
 
@@ -81,7 +80,6 @@ class CompilatorParser(Parser):
 
     @_('procedures main')
     def whole_program(self, p):
-        print("program")
         return "PROGRAM"
     
     @_('procedures PROCEDURE proc_head IS VAR declarations BEGIN commands END')
@@ -94,7 +92,6 @@ class CompilatorParser(Parser):
     
     @_('')
     def procedures(self, p):
-        print("empty procedure")
         return "EMPTY PROCEDURE"
 
     @_('PROGRAM IS VAR declarations BEGIN commands END')
@@ -103,14 +100,33 @@ class CompilatorParser(Parser):
 
     @_('identifier LBR declarations RBR')
     def proc_head(self, p):
+        self.symbol_table.add_procedure(p[0])
         return "IDENTIFIER"
-    
+
+    @_('exec_id LBR exec_declarations RBR')
+    def proc_head_execute(self, p):
+        return "EXEC"
+
+    @_('exec_declarations COMMA exec_id')
+    def exec_declarations(self, p):
+        return "EXECDECLAR"
+
+    @_('exec_id')
+    def exec_declarations(self, p):
+        return "elo"
+
+    @_('IDENTIFIER')
+    def exec_id(self,p):
+        return "EXEC ID"
+
     @_('declarations COMMA identifier')
     def declarations(self, p):
+        self.symbol_table.add_variable(p[2])
         return "DECLARATIONS"
 
     @_('identifier')
     def declarations(self, p):
+        self.symbol_table.add_variable(p[0])
         return "DECLARATIONS"
 
     @_('commands command')
@@ -127,12 +143,10 @@ class CompilatorParser(Parser):
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
-        print("ifelse")
         return "IFELSE"
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
-        print("if")
         return "IF"
 
     @_('WHILE condition DO commands ENDWHILE')
@@ -143,7 +157,7 @@ class CompilatorParser(Parser):
     def command(self, p):
         return "UNTILREPEAT"
     
-    @_('proc_head')
+    @_('proc_head_execute SEMICOLON')
     def command(self, p):
         return "PROC_HEAD SEMICOLON"
     
@@ -205,7 +219,6 @@ class CompilatorParser(Parser):
 
     @_('NUM')
     def value(self, p):
-        print("jestem tu ", p[0])
         return "NUMVALUE"
 
     @_('identifier')
@@ -214,8 +227,7 @@ class CompilatorParser(Parser):
 
     @_('IDENTIFIER')
     def identifier(self, p):
-        print("tu tez jestem", p[0])
-        return "IDENTIFIER"
+        return p[0]
 
 lex = CompilatorLexer()
 pars = CompilatorParser()
@@ -223,6 +235,4 @@ with open(sys.argv[1])  as in_f:
     text = in_f.read()
 
 pars.parse(lex.tokenize(text))
-print(pars.symbol_table.procedures)
-print(" ")
-print(pars.symbol_table.variables)
+pars.symbol_table.print_vars()
