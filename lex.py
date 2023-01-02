@@ -6,9 +6,9 @@ class CompilatorLexer(Lexer):
     
     tokens = {PROGRAM, IS,
     PROCEDURE,
-    VAR, 
+    VAR, ENDIF,
     BEGIN, END, 
-    IF, THEN, ELSE, ENDIF, 
+    IF, THEN, ELSE,
     WHILE, DO, ENDWHILE, REPEAT, UNTIL, 
     READ, WRITE,
     IDENTIFIER, ASSIGN,
@@ -28,15 +28,15 @@ class CompilatorLexer(Lexer):
         self.lineno += len(t.value)
 
     PROGRAM = r"PROGRAM"
+    PROCEDURE = r"PROCEDURE"
     IS = r"IS"
     VAR = r"VAR"
     BEGIN = r"BEGIN"
+    ENDIF = r"ENDIF"
     END = r"END"
-
     IF = r"IF"
     THEN = r"THEN"
     ELSE = r"ELSE"
-    ENDIF = r"ENDIF"
 
     WHILE = r"WHILE"
     DO = r"DO"
@@ -70,6 +70,7 @@ class CompilatorLexer(Lexer):
 
     @_(r'\d+')
     def NUM(self, t):
+        print("tu wchodze")
         t.value = int(t.value)
         return t
 
@@ -80,26 +81,21 @@ class CompilatorParser(Parser):
 
     @_('procedures main')
     def whole_program(self, p):
-        return self.code
+        print("program")
+        return "PROGRAM"
     
-    @_('PROCEDURE proc_head IS VAR declarations BEGIN commands END procedures')
+    @_('procedures PROCEDURE proc_head IS VAR declarations BEGIN commands END')
     def procedures(self, p):
         return "PROCEDURE"
 
-    @_('PROCEDURE proc_head IS BEGIN commands END procedures')
+    @_('procedures PROCEDURE proc_head IS BEGIN commands END')
     def procedures(self, p):
         return "PROCEDURE"
     
     @_('')
     def procedures(self, p):
+        print("empty procedure")
         return "EMPTY PROCEDURE"
-    #@_('PROCEDURE proc_head IS VAR declarations BEGIN commands END')
-    #def procedures(self, p):
-    #    return "PROCEDURE"
-
-    #@_('PROCEDURE proc_head IS BEGIN commands END')
-    #def procedures(self, p):
-    #    return "PROCEDURE"
 
     @_('PROGRAM IS VAR declarations BEGIN commands END')
     def main(self, p):
@@ -131,10 +127,12 @@ class CompilatorParser(Parser):
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
+        print("ifelse")
         return "IFELSE"
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
+        print("if")
         return "IF"
 
     @_('WHILE condition DO commands ENDWHILE')
@@ -207,6 +205,7 @@ class CompilatorParser(Parser):
 
     @_('NUM')
     def value(self, p):
+        print("jestem tu ", p[0])
         return "NUMVALUE"
 
     @_('identifier')
@@ -215,8 +214,8 @@ class CompilatorParser(Parser):
 
     @_('IDENTIFIER')
     def identifier(self, p):
+        print("tu tez jestem", p[0])
         return "IDENTIFIER"
-
 
 lex = CompilatorLexer()
 pars = CompilatorParser()
@@ -224,4 +223,6 @@ with open(sys.argv[1])  as in_f:
     text = in_f.read()
 
 pars.parse(lex.tokenize(text))
-
+print(pars.symbol_table.procedures)
+print(" ")
+print(pars.symbol_table.variables)
