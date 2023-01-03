@@ -76,6 +76,7 @@ class CompilatorLexer(Lexer):
 class CompilatorParser(Parser):
     tokens = CompilatorLexer.tokens
     literals = CompilatorLexer.literals
+    commands = []
     symbol_table = SymbolTable()
     processed_procedure = ""
 
@@ -199,7 +200,7 @@ class CompilatorParser(Parser):
 
     @_('value MULTIPLY value')
     def expression(self, p):
-        return "MULT"
+        return "MULT", 
 
     @_('value DIVIDE value')
     def expression(self, p):

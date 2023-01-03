@@ -4,8 +4,22 @@ class Procedure:
     def __init__(self, name):
         self.name = name
 
+    def set_begin_offset(self, memory_offset):
+        self.begin_memory_offset = memory_offset
+    
+    def set_end_offset(self, memory_offset):
+        self.end_memory_offset = memory_offset
+
+    def set_memory_traceback_offset(self, memory_offset):
+        self.set_memory_traceback_offset = memory_offset
+
     def __repr__(self):
         return "Procedure : " + str(self.name)
+
+class Command:
+    def __init__(self, type, arguments):
+        self.type = type
+        self.arguments = arguments
     
 class Var:
     def __init__(self, name, memory_offset, in_procedure):
