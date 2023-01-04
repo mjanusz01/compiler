@@ -76,9 +76,12 @@ class CompilatorLexer(Lexer):
 class CompilatorParser(Parser):
     tokens = CompilatorLexer.tokens
     literals = CompilatorLexer.literals
-    commands = []
+    procedure_commands_list = []
+    commands_list = []
+    temp_list = []
     symbol_table = SymbolTable()
     processed_procedure = ""
+    in_procedure = False
 
     @_('procedures main')
     def whole_program(self, p):
@@ -117,7 +120,7 @@ class CompilatorParser(Parser):
         
     @_('exec_id LBR exec_declarations RBR')
     def proc_head_execute(self, p):
-        return "EXEC"
+        return p[0]
 
     @_('IDENTIFIER')
     def proc_id(self, p):
@@ -126,15 +129,17 @@ class CompilatorParser(Parser):
 
     @_('exec_declarations COMMA exec_id')
     def exec_declarations(self, p):
-        return "EXECDECLAR"
+        self.temp_list.append(p[2])
+        return [p[0], p[2]]
 
     @_('exec_id')
     def exec_declarations(self, p):
-        return "elo"
+        self.temp_list.append(p[0])
+        return p[0]
 
     @_('IDENTIFIER')
     def exec_id(self,p):
-        return "EXEC ID"
+        return p[0]
 
     @_('declarations COMMA identifier')
     def declarations(self, p):
@@ -148,103 +153,114 @@ class CompilatorParser(Parser):
 
     @_('commands command')
     def commands(self, p):
-        return "COMMANDS"
+        return [p[0], p[1]]
 
     @_('command')
     def commands(self, p):
-        return "COMMANDSLAST"
+        return p[0]
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command(self, p):
-        return "ASSIGN"
+        return "assign", p[0], p[2]
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
-        return "IFELSE"
+        self.commands_list.append(["ifelse", p[1], p[3], p[5]])
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
-        return "IF"
+        self.commands_list.append(["if", p[1], p[3]])
 
     @_('WHILE condition DO commands ENDWHILE')
     def command(self, p):
+        self.commands_list.append(["while",p[1],p[3]])
         return "WHILE"
 
     @_('REPEAT commands UNTIL condition SEMICOLON')
     def command(self, p):
+        self.commands_list.append(["until",p[1], p[3]])
         return "UNTILREPEAT"
     
     @_('proc_head_execute SEMICOLON')
     def command(self, p):
+        self.commands_list.append(["proc", p[0], self.temp_list])
+        self.temp_list = []
         return "PROC_HEAD SEMICOLON"
     
     @_('READ identifier SEMICOLON')
     def command(self, p):
-        return "READ"
+        self.commands_list.append(["read", p[1]])
+        return "READ", p[1]
 
     @_('WRITE value SEMICOLON')
     def command(self, p):
-        return "WRITE"
+        self.commands_list.append(["write", p[1]])
+        return "write", p[1]
 
     @_('value')
     def expression(self, p):
-        return "VALUE"
+        print(["load",p[0]])
 
     @_('value PLUS value')
     def expression(self, p):
-        return "ADD"
+        return "ADD", p[0], p[2]
 
     @_('value MINUS value')
     def expression(self, p):
-        return "SUBT"
+        return "SUBT", p[0], p[2]
 
     @_('value MULTIPLY value')
     def expression(self, p):
-        return "MULT", 
+        return "MULT", p[0], p[2]
 
     @_('value DIVIDE value')
     def expression(self, p):
-        return "DIV"
+        return "DIV", p[0], p[2]
 
     @_('value MODULO value')
     def expression(self, p):
-        return "MOD"
+        return "MOD", p[0], p[2]
 
     @_('value EQ value')
     def condition(self, p):
-        return "EQ"
+        return "EQ", p[0], [2]
 
     @_('value NEQ value')
     def condition(self, p):
-        return "NEQ"
+        return "NEQ", p[0], p[2]
 
     @_('value GT value')
     def condition(self, p):
-        return "GT"
+        return "GT", p[0], p[2]
 
     @_('value LT value')
     def condition(self, p):
-        return "LT"
+        return "LT", p[0], p[2]
 
     @_('value GET value')
     def condition(self, p):
-        return "GEQ"
+        return "GEQ", p[0], p[2]
 
     @_('value LET value')
     def condition(self, p):
-        return "LEQ"
+        return "LEQ", p[0], p[2]
 
     @_('NUM')
     def value(self, p):
-        return "NUMVALUE"
+        return "const", p[0]
 
     @_('identifier')
     def value(self, p):
-        return "ID"
+        return "var_value", p[0]
 
     @_('IDENTIFIER')
     def identifier(self, p):
         return p[0]
+
+    def write_commands(self):
+        for com in self.commands_list:
+            print(com)
+
 
 lex = CompilatorLexer()
 pars = CompilatorParser()
@@ -253,3 +269,4 @@ with open(sys.argv[1])  as in_f:
 
 pars.parse(lex.tokenize(text))
 pars.symbol_table.print_vars()
+pars.write_commands()

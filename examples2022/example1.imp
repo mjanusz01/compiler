@@ -49,4 +49,5 @@ BEGIN
   WRITE x;
   WRITE y;
   WRITE nwd;
+  WRITE 1;
 END
