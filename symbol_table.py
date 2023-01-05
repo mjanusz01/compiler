@@ -14,7 +14,18 @@ class Procedure:
         self.set_memory_traceback_offset = memory_offset
 
     def __repr__(self):
-        return "Procedure : " + str(self.name)
+        return str(self.name)
+    
+    def set_command_list(self, command_list):
+        self.command_list = command_list
+
+    def print_command_list(self):
+        for command in self.command_list:
+            print(command)
+    
+    def get_name(self):
+        print("zwrot ",self.name)
+        return self.name
 
 class Command:
     def __init__(self, type, arguments):
@@ -51,11 +62,22 @@ class SymbolTable:
             if var.in_procedure == True and var.proc_name == "-1":
                 var.proc_name = name
     
+    def find_procedure_by_name(self, name):
+        for proc in self.procedures:
+            if str(proc) == str(name):
+                return proc
+        return Procedure("none")
+    
     def print_vars(self):
         for var in self.variables:
             print(var)
         print(" ")
         for proc in self.procedures:
-            print(proc)
+            print("Procedura o nazwie ",proc)
+            for com in proc.command_list:
+                print(com)
+                print(" ")
+            print(" ")
+
 
     

@@ -76,44 +76,80 @@ class CompilatorLexer(Lexer):
 class CompilatorParser(Parser):
     tokens = CompilatorLexer.tokens
     literals = CompilatorLexer.literals
-    procedure_commands_list = []
     commands_list = []
     proc_command_list = []
     temp_list = []
     symbol_table = SymbolTable()
-    processed_procedure = ""
     in_procedure = True
-
+    processed_procedure = "pa"
     @_('procedures main')
     def whole_program(self, p):
         return "PROGRAM"
     
-    @_('procedures PROCEDURE proc_head IS VAR declarations BEGIN commands END')
+    @_('PROCEDURE proc_head IS VAR proc_declarations BEGIN commands END procedures2')
     def procedures(self, p):
-        print("procedura o nazwie ", p[2])
-        self.processed_procedure = p[2]
+        print("procedura o nazwie ", p[1])
+        print("procedura aktualna ", self.processed_procedure)
+        #print(p[1])
+        #print("ODPOWIEDZ",self.symbol_table.find_procedure_by_name(p[1]))
+        #self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
+        #print("komendy lista", self.proc_command_list)
+        #self.proc_command_list = []
         return "PROCEDURE"
 
-    @_('procedures PROCEDURE proc_head IS BEGIN commands END')
+    @_('PROCEDURE proc_head IS VAR proc_declarations BEGIN commands END procedures2')
+    def procedures2(self, p):
+        print("procedura o nazwie ", p[1])
+        print("procedura aktualna ", self.processed_procedure)
+        #print(p[1])
+        #print("ODPOWIEDZ",self.symbol_table.find_procedure_by_name(p[1]))
+        #self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
+        #print("komendy lista", self.proc_command_list)
+        #self.proc_command_list = []
+        return "PROCEDURE"    
+
+    @_('PROCEDURE proc_head IS BEGIN commands END procedures2')
     def procedures(self, p):
-        print("procedura o nazwie ", p[2])
-        self.processed_procedure = p[2]
+        #print("procedura o nazwie ", p[1])
+        #print("procedura aktualna ", self.processed_procedure)
+        #self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
+        #print("komendy lista", self.proc_command_list)
+        #self.proc_command_list = []
         return "PROCEDURE"
+
+    @_('PROCEDURE proc_head IS BEGIN commands END procedures2')
+    def procedures2(self, p):
+        #print("procedura o nazwie ", p[1])
+        #print("procedura aktualna ", self.processed_procedure)
+        #self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
+        #print("komendy lista", self.proc_command_list)
+        #self.proc_command_list = []
+        return "PROCEDURE"    
     
     @_('')
-    def procedures(self, p):
+    def procedures2(self, p):
+        print("empty")
+        self.in_procedure = False
+        self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
         return "EMPTY PROCEDURE"
+
+    @_('')
+    def procedures(self, p):
+        print("empty")
+        self.in_procedure = False
+        return "EMPTY PROCEDURE"    
 
     @_('PROGRAM IS VAR declarations BEGIN commands END')
     def main(self, p):
-        in_procedure = False
         return "MAIN PROGRAM"
 
     @_('identifier LBR proc_declarations RBR')
     def proc_head(self, p):
-        print("set name")
+        print("set name ", p[0])
         self.symbol_table.add_procedure(p[0])
-        self.processed_procedure = str(p[0])
+        self.symbol_table.find_procedure_by_name(self.processed_procedure).set_command_list(self.proc_command_list)
+        self.processed_procedure = p[0]
+        self.proc_command_list = []
         return p[0]
 
     @_('proc_declarations COMMA proc_id')
@@ -167,10 +203,15 @@ class CompilatorParser(Parser):
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command(self, p):
+        if self.in_procedure:
+            self.proc_command_list.append(["assign", p[0], p[2]])
+        else:
+            self.commands_list.append(["assign", p[0], p[2]])
         return "assign", p[0], p[2]
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
+        print("AKTUALNIE ",self.in_procedure)
         if self.in_procedure:
             self.proc_command_list.append(["ifelse", p[1], p[3], p[5]])
         else:
@@ -178,6 +219,7 @@ class CompilatorParser(Parser):
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
+        print("AKTUALNIE ",self.in_procedure)
         if self.in_procedure:
             self.proc_command_list.append(["if", p[1], p[3]])
         else:
@@ -185,6 +227,7 @@ class CompilatorParser(Parser):
 
     @_('WHILE condition DO commands ENDWHILE')
     def command(self, p):
+        print("WHILE ",self.in_procedure)
         if self.in_procedure:
             self.proc_command_list.append(["while",p[1],p[3]])
         else:
@@ -193,6 +236,7 @@ class CompilatorParser(Parser):
 
     @_('REPEAT commands UNTIL condition SEMICOLON')
     def command(self, p):
+        print("AKTUALNIE ",self.in_procedure)
         if self.in_procedure:
             self.proc_command_list.append(["until", p[1], p[3]])
         else:
@@ -202,7 +246,10 @@ class CompilatorParser(Parser):
     @_('proc_head_execute SEMICOLON')
     def command(self, p):
         if self.in_procedure:
+            print("EXECUTE ", p[0])
             self.proc_command_list.append(["proc", p[0], self.temp_list])
+            print(self.proc_command_list)
+            self.temp_list = []
         else:
             self.commands_list.append(["proc", p[0], self.temp_list])
             self.temp_list = []
@@ -218,15 +265,17 @@ class CompilatorParser(Parser):
 
     @_('WRITE value SEMICOLON')
     def command(self, p):
+        print("WRITE aktualnie")
         if self.in_procedure:
             self.proc_command_list.append(["write", p[1]])
+            
         else:
             self.commands_list.append(["write", p[1]])
         return "write", p[1]
 
     @_('value')
     def expression(self, p):
-        print(["load",p[0]])
+        return "LOAD", p[0]
 
     @_('value PLUS value')
     def expression(self, p):
@@ -295,5 +344,9 @@ with open(sys.argv[1])  as in_f:
     text = in_f.read()
 
 pars.parse(lex.tokenize(text))
+print("comm")
+print(pars.processed_procedure)
+print(pars.proc_command_list)
 pars.symbol_table.print_vars()
+
 pars.write_commands()
