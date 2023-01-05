@@ -57,3 +57,5 @@ class SymbolTable:
         print(" ")
         for proc in self.procedures:
             print(proc)
+
+    

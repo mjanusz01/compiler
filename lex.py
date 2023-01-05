@@ -78,10 +78,11 @@ class CompilatorParser(Parser):
     literals = CompilatorLexer.literals
     procedure_commands_list = []
     commands_list = []
+    proc_command_list = []
     temp_list = []
     symbol_table = SymbolTable()
     processed_procedure = ""
-    in_procedure = False
+    in_procedure = True
 
     @_('procedures main')
     def whole_program(self, p):
@@ -89,10 +90,14 @@ class CompilatorParser(Parser):
     
     @_('procedures PROCEDURE proc_head IS VAR declarations BEGIN commands END')
     def procedures(self, p):
+        print("procedura o nazwie ", p[2])
+        self.processed_procedure = p[2]
         return "PROCEDURE"
 
     @_('procedures PROCEDURE proc_head IS BEGIN commands END')
     def procedures(self, p):
+        print("procedura o nazwie ", p[2])
+        self.processed_procedure = p[2]
         return "PROCEDURE"
     
     @_('')
@@ -101,6 +106,7 @@ class CompilatorParser(Parser):
 
     @_('PROGRAM IS VAR declarations BEGIN commands END')
     def main(self, p):
+        in_procedure = False
         return "MAIN PROGRAM"
 
     @_('identifier LBR proc_declarations RBR')
@@ -108,7 +114,7 @@ class CompilatorParser(Parser):
         print("set name")
         self.symbol_table.add_procedure(p[0])
         self.processed_procedure = str(p[0])
-        return "IDENTIFIER"
+        return p[0]
 
     @_('proc_declarations COMMA proc_id')
     def proc_declarations(self, p):
@@ -165,36 +171,57 @@ class CompilatorParser(Parser):
 
     @_('IF condition THEN commands ELSE commands ENDIF')
     def command(self, p):
-        self.commands_list.append(["ifelse", p[1], p[3], p[5]])
+        if self.in_procedure:
+            self.proc_command_list.append(["ifelse", p[1], p[3], p[5]])
+        else:
+            self.commands_list.append(["ifelse", p[1], p[3], p[5]])
 
     @_('IF condition THEN commands ENDIF')
     def command(self, p):
-        self.commands_list.append(["if", p[1], p[3]])
+        if self.in_procedure:
+            self.proc_command_list.append(["if", p[1], p[3]])
+        else:
+            self.commands_list.append(["if", p[1], p[3]])
 
     @_('WHILE condition DO commands ENDWHILE')
     def command(self, p):
-        self.commands_list.append(["while",p[1],p[3]])
+        if self.in_procedure:
+            self.proc_command_list.append(["while",p[1],p[3]])
+        else:
+            self.commands_list.append(["while",p[1],p[3]])
         return "WHILE"
 
     @_('REPEAT commands UNTIL condition SEMICOLON')
     def command(self, p):
-        self.commands_list.append(["until",p[1], p[3]])
+        if self.in_procedure:
+            self.proc_command_list.append(["until", p[1], p[3]])
+        else:
+            self.commands_list.append(["until",p[1], p[3]])
         return "UNTILREPEAT"
     
     @_('proc_head_execute SEMICOLON')
     def command(self, p):
-        self.commands_list.append(["proc", p[0], self.temp_list])
-        self.temp_list = []
+        if self.in_procedure:
+            self.proc_command_list.append(["proc", p[0], self.temp_list])
+        else:
+            self.commands_list.append(["proc", p[0], self.temp_list])
+            self.temp_list = []
         return "PROC_HEAD SEMICOLON"
     
     @_('READ identifier SEMICOLON')
     def command(self, p):
-        self.commands_list.append(["read", p[1]])
+        if self.in_procedure:
+            self.proc_command_list.append(["read", p[1]])
+        else:
+            self.commands_list.append(["read", p[1]])
         return "READ", p[1]
 
     @_('WRITE value SEMICOLON')
     def command(self, p):
-        self.commands_list.append(["write", p[1]])
+        if self.in_procedure:
+            self.proc_command_list.append(["write", p[1]])
+        else:
+            self.commands_list.append(["write", p[1]])
         return "write", p[1]
 
     @_('value')
