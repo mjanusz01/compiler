@@ -81,6 +81,7 @@ class CompilatorParser(Parser):
     temp_list = []
     symbol_table = SymbolTable()
     in_procedure = True
+    in_command = False
     processed_procedure = "pa"
     @_('procedures main')
     def whole_program(self, p):
@@ -201,40 +202,57 @@ class CompilatorParser(Parser):
     def commands(self, p):
         return p[0]
 
+    @_('command2')
+    def commands2(self,p):
+        return p[0]
+
+    @_('commands2 command2')
+    def commands2(self, p):
+        return [p[0], p[1]]
+
     @_('identifier ASSIGN expression SEMICOLON')
     def command(self, p):
-        if self.in_procedure:
-            self.proc_command_list.append(["assign", p[0], p[2]])
-        else:
-            self.commands_list.append(["assign", p[0], p[2]])
+        if not self.in_command:
+            if self.in_procedure:
+                self.proc_command_list.append(["assign", p[0], p[2]])
+            else:
+                self.commands_list.append(["assign", p[0], p[2]])
         return "assign", p[0], p[2]
 
-    @_('IF condition THEN commands ELSE commands ENDIF')
+    @_('IF condition THEN commands2 ELSE commands2 ENDIF')
     def command(self, p):
-        print("AKTUALNIE ",self.in_procedure)
-        if self.in_procedure:
-            self.proc_command_list.append(["ifelse", p[1], p[3], p[5]])
-        else:
-            self.commands_list.append(["ifelse", p[1], p[3], p[5]])
+        if not self.in_command:
+            self.in_command = True
+            if self.in_procedure:
+                print("appendujemy")
+                self.proc_command_list.append(["ifelse", p[1], p[3], p[5]])
+            else:
+                self.commands_list.append(["ifelse", p[1], p[3], p[5]])
+            self.in_command = False
+        return "ifelse", p[1], p[3], p[5]
 
-    @_('IF condition THEN commands ENDIF')
+    @_('IF condition THEN commands2 ENDIF')
     def command(self, p):
-        print("AKTUALNIE ",self.in_procedure)
-        if self.in_procedure:
-            self.proc_command_list.append(["if", p[1], p[3]])
-        else:
-            self.commands_list.append(["if", p[1], p[3]])
+        if not self.in_command:
+            self.in_command = True
+            if self.in_procedure:
+                self.proc_command_list.append(["if", p[1], p[3]])
+            else:
+                self.commands_list.append(["if", p[1], p[3]])
+            self.in_command = False
 
-    @_('WHILE condition DO commands ENDWHILE')
+    @_('WHILE condition DO commands2 ENDWHILE')
     def command(self, p):
-        print("WHILE ",self.in_procedure)
-        if self.in_procedure:
-            self.proc_command_list.append(["while",p[1],p[3]])
-        else:
-            self.commands_list.append(["while",p[1],p[3]])
+        if not self.in_command:
+            self.in_command = True
+            if self.in_procedure:
+                self.proc_command_list.append(["while",p[1],p[3]])
+            else:
+                self.commands_list.append(["while",p[1],p[3]])
+            self.in_command = False
         return "WHILE"
 
-    @_('REPEAT commands UNTIL condition SEMICOLON')
+    @_('REPEAT commands2 UNTIL condition SEMICOLON')
     def command(self, p):
         print("AKTUALNIE ",self.in_procedure)
         if self.in_procedure:
@@ -268,9 +286,46 @@ class CompilatorParser(Parser):
         print("WRITE aktualnie")
         if self.in_procedure:
             self.proc_command_list.append(["write", p[1]])
-            
         else:
             self.commands_list.append(["write", p[1]])
+        return "write", p[1]
+
+
+
+
+
+    @_('identifier ASSIGN expression SEMICOLON')
+    def command2(self, p):
+        return "assign", p[0], p[2]
+
+    @_('IF condition THEN commands2 ELSE commands2 ENDIF')
+    def command2(self, p):
+        return "ifelse", p[1], p[3], p[5]
+
+    @_('IF condition THEN commands2 ENDIF')
+    def command2(self, p):
+        return "if", p[1], p[3]
+
+    @_('WHILE condition DO commands2 ENDWHILE')
+    def command2(self, p):
+        return "WHILE", p[1], p[3]
+
+    @_('REPEAT commands2 UNTIL condition SEMICOLON')
+    def command2(self, p):
+        return "UNTIL", p[1], p[3]
+    
+    @_('proc_head_execute SEMICOLON')
+    def command2(self, p):
+        temp_copy = self.temp_list.copy()
+        self.temp_list = []
+        return "proc", p[0], temp_copy
+    
+    @_('READ identifier SEMICOLON')
+    def command2(self, p):
+        return "READ", p[1]
+
+    @_('WRITE value SEMICOLON')
+    def command2(self, p):
         return "write", p[1]
 
     @_('value')
