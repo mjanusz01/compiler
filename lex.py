@@ -290,10 +290,6 @@ class CompilatorParser(Parser):
             self.commands_list.append(["write", p[1]])
         return "write", p[1]
 
-
-
-
-
     @_('identifier ASSIGN expression SEMICOLON')
     def command2(self, p):
         return "assign", p[0], p[2]
@@ -330,7 +326,7 @@ class CompilatorParser(Parser):
 
     @_('value')
     def expression(self, p):
-        return "LOAD", p[0]
+        return p[0]
 
     @_('value PLUS value')
     def expression(self, p):
@@ -382,7 +378,7 @@ class CompilatorParser(Parser):
 
     @_('identifier')
     def value(self, p):
-        return "var_value", p[0]
+        return "var", p[0]
 
     @_('IDENTIFIER')
     def identifier(self, p):
@@ -400,8 +396,8 @@ with open(sys.argv[1])  as in_f:
 
 pars.parse(lex.tokenize(text))
 print("comm")
-print(pars.processed_procedure)
-print(pars.proc_command_list)
-pars.symbol_table.print_vars()
+#print(pars.processed_procedure)
+#print(pars.proc_command_list)
+#pars.symbol_table.print_vars()
 
 pars.write_commands()

@@ -1,0 +1,10 @@
+PROGRAM IS
+VAR x,i
+BEGIN
+    x:=10;
+    i:=0;
+    WHILE i>x DO
+        x:=x+1;
+    ENDWHILE
+    WRITE x;
+END

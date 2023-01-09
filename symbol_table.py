@@ -24,7 +24,6 @@ class Procedure:
             print(command)
     
     def get_name(self):
-        print("zwrot ",self.name)
         return self.name
 
 class Command:
@@ -43,6 +42,12 @@ class Var:
     def set_proc_name(self, proc_name):
         self.proc_name = proc_name
 
+    def get_name(self):
+        return self.name
+
+    def get_memory_offset(self):
+        return self.memory_offset
+
     def __repr__(self):
         return "var name: " + str(self.name) + " memory : " + str(self.memory_offset) + " proc : " + str(self.in_procedure) + " proc name : " + str(self.proc_name)
 
@@ -50,11 +55,18 @@ class SymbolTable:
     def __init__(self):
         self.variables = []
         self.procedures = []
-        self.memory_offset = 0
+        self.memory_offset = 3
 
     def add_variable(self, name, in_proc):
         self.variables = self.variables + [Var(name, self.memory_offset, in_proc)]
         self.memory_offset = self.memory_offset + 1
+
+    def find_variable(self, name):
+        for var in self.variables:
+            if var.get_name == name:
+                return name
+            else:
+                return "none name"
     
     def add_procedure(self,name):
         self.procedures = self.procedures + [Procedure(name)]
