@@ -196,7 +196,7 @@ class CompilatorParser(Parser):
 
     @_('commands command')
     def commands(self, p):
-        return [p[0], p[1]]
+        return p[0], p[1]
 
     @_('command')
     def commands(self, p):
@@ -208,7 +208,7 @@ class CompilatorParser(Parser):
 
     @_('commands2 command2')
     def commands2(self, p):
-        return [p[0], p[1]]
+        return p[0], p[1]
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command(self, p):
