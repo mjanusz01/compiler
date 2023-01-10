@@ -102,7 +102,7 @@ def assign(self,command,symbol_table,line_count):
             second_mem = self.symbol_table.find_variable(command[2][2][1]).get_memory_offset() 
                 
         # Podczas wykonywania mnozenia sa wykorzystywane trzy dodatkowe komorki pamieci oraz adresy skoków
-        # komorka p1 = mnoznik ktory jest shiftowany
+        # komorka p1 = mnoznik ktory jest shiftowany (mnozony razy 2 mnoznik)
         # komorka p2 = dodawane kolejno wyniki
         # komorka p3 = przechowywanie liczby 2*half na potrzeby odejmowania
         # komorka p4 = halfowany mnoznik
@@ -140,14 +140,14 @@ def assign(self,command,symbol_table,line_count):
         # Jesli nie, to nalezy dodac do p1 aktualny wyshiftowany mnoznik
         self.temp_code.append("LOAD ", 2)
         self.temp_code.append("ADD ", 1)
-        self.temp_code.append("STORE ", 1)
+        self.temp_code.append("STORE ", 2)
 
         # Po wszystkim shiftujemy mnoznik 2x i halfujemy 2x i wstawiamy do odpowiednich komórek
         self.temp_code.append("LOAD ", 2)
         self.temp_code.append("ADD ", 2)
         self.temp_code.append("STORE ", 2)
         self.temp_code.append("LOAD ", 4)
-        self.temp_code.append("HALF")
+        self.temp_code.append("HALF ")
         self.temp_code.append("STORE ", 4)
 
         # Sprawdzenie warunku konca mnozenia (aktualnie w p0 jest to samo co w p4)
@@ -165,4 +165,3 @@ def assign(self,command,symbol_table,line_count):
 
     return temp_code
 
-    

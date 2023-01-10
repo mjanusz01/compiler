@@ -236,9 +236,9 @@ class CompilatorParser(Parser):
         if not self.in_command:
             self.in_command = True
             if self.in_procedure:
-                self.proc_command_list.append(["if", p[1], p[3]])
+                self.proc_command_list.append(["IF", p[1], p[3]])
             else:
-                self.commands_list.append(["if", p[1], p[3]])
+                self.commands_list.append(["IF", p[1], p[3]])
             self.in_command = False
 
     @_('WHILE condition DO commands2 ENDWHILE')
