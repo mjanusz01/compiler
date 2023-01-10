@@ -316,7 +316,7 @@ class ConditionTest(unittest.TestCase):
         test_symbol_table = SymbolTable()
         test_symbol_table.add_variable('i',False)
 
-        expected_code = ['SET 2', 'STORE 1', 'LOAD 3', 'SUBT 1', 'JZERO [not]']
+        expected_code = ['SET 2','SUBT 3','JPOS [not]','SET 2','STORE 1','LOAD 3','SUBT 1','JPOS [not]']
 
         #when
         assign_code = condition.eq_condition(test_command,test_symbol_table)
@@ -331,7 +331,7 @@ class ConditionTest(unittest.TestCase):
         test_symbol_table = SymbolTable()
         test_symbol_table.add_variable('x',False)
 
-        expected_code = ['SET 111', 'SUBT 3', 'JZERO [not]']
+        expected_code = ['SET 111', 'SUBT 3', 'JPOS [not]','SET 111','STORE 1','LOAD 3','SUBT 1','JPOS [not]']
 
         #when
         assign_code = condition.eq_condition(test_command,test_symbol_table)
@@ -342,7 +342,7 @@ class ConditionTest(unittest.TestCase):
     def const_EQ_const_returns_true_test(self):
 
         #setup
-        test_command = ('EQ', ('const', '12'), ('const', '10'))
+        test_command = ('EQ', ('const', '12'), ('const', '12'))
         test_symbol_table = SymbolTable()
         expected_code = []
 
@@ -355,7 +355,80 @@ class ConditionTest(unittest.TestCase):
     def const_EQ_const_returns_false_test(self):
 
         #setup
-        test_command = ('GT', ('const', '12'), ('const', '13'))
+        test_command = ('EQ', ('const', '12'), ('const', '13'))
+        test_symbol_table = SymbolTable()
+        expected_code = ['JPOS [not]']
+
+        #when
+        assign_code = condition.eq_condition(test_command,test_symbol_table)
+
+        #then
+        self.assertEqual(expected_code,assign_code)
+
+    def var_NEQ_var_test(self):
+
+        #setup
+        test_command = ('NEQ', ('var', 'i'), ('var', 'x'))
+        test_symbol_table = SymbolTable()
+        test_symbol_table.add_variable('x',False)
+        test_symbol_table.add_variable('i',False)
+
+        expected_code = ['LOAD 4', 'SUBT 3', 'JZERO [not]', 'LOAD 3', 'SUBT 4', 'JZERO [not]']
+
+        #when
+        assign_code = condition.eq_condition(test_command,test_symbol_table)
+
+        #then
+        self.assertEqual(expected_code,assign_code)
+
+    def var_NEQ_const_test(self):
+
+        #setup
+        test_command = ('NEQ', ('var', 'i'), ('const', '2'))
+        test_symbol_table = SymbolTable()
+        test_symbol_table.add_variable('i',False)
+
+        expected_code = ['SET 2','SUBT 3','JZERO [not]','SET 2','STORE 1','LOAD 3','SUBT 1','JZERO [not]']
+
+        #when
+        assign_code = condition.eq_condition(test_command,test_symbol_table)
+        
+
+        #then
+        self.assertEqual(expected_code,assign_code)
+
+    def const_NEQ_var_test(self):
+
+        #setup
+        test_command = ('NEQ', ('const', '111'), ('var', 'x'))
+        test_symbol_table = SymbolTable()
+        test_symbol_table.add_variable('x',False)
+
+        expected_code = ['SET 111', 'SUBT 3', 'JZERO [not]','SET 111','STORE 1','LOAD 3','SUBT 1','JZERO [not]']
+
+        #when
+        assign_code = condition.eq_condition(test_command,test_symbol_table)
+
+        #then
+        self.assertEqual(expected_code,assign_code)
+    
+    def const_NEQ_const_returns_true_test(self):
+
+        #setup
+        test_command = ('NEQ', ('const', '12'), ('const', '12'))
+        test_symbol_table = SymbolTable()
+        expected_code = []
+
+        #when
+        assign_code = condition.eq_condition(test_command,test_symbol_table)
+
+        #then
+        self.assertEqual(expected_code,assign_code)
+
+    def const_NEQ_const_returns_false_test(self):
+
+        #setup
+        test_command = ('NEQ', ('const', '12'), ('const', '13'))
         test_symbol_table = SymbolTable()
         expected_code = ['JZERO [not]']
 
@@ -396,3 +469,9 @@ test.var_EQ_const_test()
 test.const_EQ_var_test()
 test.const_EQ_const_returns_true_test()
 test.const_EQ_const_returns_false_test()
+
+test.var_NEQ_var_test()
+test.var_NEQ_const_test()
+test.const_NEQ_var_test()
+test.const_NEQ_const_returns_true_test()
+test.const_NEQ_const_returns_false_test()

@@ -1,5 +1,6 @@
 from sly import Lexer, Parser
 from symbol_table import SymbolTable, Var, Procedure
+from code_generator import CodeGenerator
 import sys
 
 class CompilatorLexer(Lexer):
@@ -214,7 +215,7 @@ class CompilatorParser(Parser):
     def command(self, p):
         if not self.in_command:
             if self.in_procedure:
-                self.proc_command_list.append(["ASSIGN", p[0], p[2]])
+                self.proc_command_list = self.proc_command_list + ["ASSIGN", p[0], p[2]]
             else:
                 self.commands_list.append(["ASSIGN", p[0], p[2]])
         return "ASSIGN", p[0], p[2]
@@ -246,9 +247,9 @@ class CompilatorParser(Parser):
         if not self.in_command:
             self.in_command = True
             if self.in_procedure:
-                self.proc_command_list.append(["while",p[1],p[3]])
+                self.proc_command_list.append(["WHILE",p[1],p[3]])
             else:
-                self.commands_list.append(["while",p[1],p[3]])
+                self.commands_list.append(["WHILE",p[1],p[3]])
             self.in_command = False
         return "WHILE"
 
@@ -285,10 +286,10 @@ class CompilatorParser(Parser):
     def command(self, p):
         print("WRITE aktualnie")
         if self.in_procedure:
-            self.proc_command_list.append(["write", p[1]])
+            self.proc_command_list.append(["WRITE", p[1]])
         else:
-            self.commands_list.append(["write", p[1]])
-        return "write", p[1]
+            self.commands_list.append(["WRITE", p[1]])
+        return "WRITE", p[1]
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command2(self, p):
@@ -322,7 +323,7 @@ class CompilatorParser(Parser):
 
     @_('WRITE value SEMICOLON')
     def command2(self, p):
-        return "write", p[1]
+        return "WRITE", p[1]
 
     @_('value')
     def expression(self, p):
@@ -391,7 +392,9 @@ class CompilatorParser(Parser):
 
 lex = CompilatorLexer()
 pars = CompilatorParser()
-with open(sys.argv[1])  as in_f:
+
+
+with open(sys.argv[1]) as in_f:
     text = in_f.read()
 
 pars.parse(lex.tokenize(text))
@@ -401,3 +404,7 @@ print("comm")
 #pars.symbol_table.print_vars()
 
 pars.write_commands()
+
+code_gen = CodeGenerator(pars.symbol_table)
+code_gen.generate_code(pars.commands_list)
+

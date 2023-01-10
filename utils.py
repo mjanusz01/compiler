@@ -1,7 +1,14 @@
 #TODO: not implemented yet
 def linecount(code):
-    return 1
+    return len(code)
 
-#TODO: not implemented yet
 def replace(code, pattern, str_to_replace):
-    return code
+    new_command = []
+    for command in code:
+        command = command.replace(pattern, str_to_replace)
+        new_command.append(command)
+    return new_command
+
+def print_code(code):
+    for command in code:
+        print(command)

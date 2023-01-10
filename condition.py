@@ -4,7 +4,9 @@ def double_arg_condition(command,symbol_table):
     if command[1][0]=="const":
         first_const = command[1][1]
     else:
-        first_mem = symbol_table.find_variable(command[1][1]).get_memory_offset()
+        print(symbol_table.find_variable(command[1][1][1]))
+        print(command[1][1][1])
+        first_mem = symbol_table.find_variable(command[1][1][1]).get_memory_offset()
 
     if command[2][0]=="const":
         second_const = command[2][1]
@@ -117,6 +119,11 @@ def double_arg_condition(command,symbol_table):
 def eq_condition(command,symbol_table):
     temp_code = []
 
+    first_const = 0
+    second_const = 0
+    first_mem = 0
+    second_mem = 0
+
     if command[1][0]=="const":
         first_const = command[1][1]
     else:
@@ -136,15 +143,6 @@ def eq_condition(command,symbol_table):
             temp_code.append("SUBT " + str(first_mem))
             temp_code.append("JPOS [not]")
         elif command[1][0]=="var":
-            temp_code.append("SET " + str(first_const))
-            temp_code.append("SUBT " + str(second_mem))
-            temp_code.append("JPOS [not]")
-            temp_code.append("SET " + str(first_const))
-            temp_code.append("STORE " + str(1))
-            temp_code.append("LOAD " + str(second_mem))
-            temp_code.append("SUBT " + str(1))
-            temp_code.append("JPOS [not]")
-        elif command[2][0]=="var":
             temp_code.append("SET " + str(second_const))
             temp_code.append("SUBT " + str(first_mem))
             temp_code.append("JPOS [not]")
@@ -153,8 +151,17 @@ def eq_condition(command,symbol_table):
             temp_code.append("LOAD " + str(first_mem))
             temp_code.append("SUBT " + str(1))
             temp_code.append("JPOS [not]")
+        elif command[2][0]=="var":
+            temp_code.append("SET " + str(first_const))
+            temp_code.append("SUBT " + str(second_mem))
+            temp_code.append("JPOS [not]")
+            temp_code.append("SET " + str(first_const))
+            temp_code.append("STORE " + str(1))
+            temp_code.append("LOAD " + str(second_mem))
+            temp_code.append("SUBT " + str(1))
+            temp_code.append("JPOS [not]")
         else:  
-            if not int(command[2][0]) == int(command[1][0]):
+            if not int(first_const) == int(second_const):
                 temp_code.append("JPOS [not]") 
     else:
         if command[1][0]=="var" and command [2][0] == "var":
@@ -165,15 +172,6 @@ def eq_condition(command,symbol_table):
             temp_code.append("SUBT " + str(first_mem))
             temp_code.append("JZERO [not]")
         elif command[1][0]=="var":
-            temp_code.append("SET " + str(first_const))
-            temp_code.append("SUBT " + str(second_mem))
-            temp_code.append("JZERO [not]")
-            temp_code.append("SET " + str(first_const))
-            temp_code.append("STORE " + str(1))
-            temp_code.append("LOAD " + str(second_mem))
-            temp_code.append("SUBT " + str(1))
-            temp_code.append("JZERO [not]")
-        elif command[2][0]=="var":
             temp_code.append("SET " + str(second_const))
             temp_code.append("SUBT " + str(first_mem))
             temp_code.append("JZERO [not]")
@@ -182,9 +180,19 @@ def eq_condition(command,symbol_table):
             temp_code.append("LOAD " + str(first_mem))
             temp_code.append("SUBT " + str(1))
             temp_code.append("JZERO [not]")
+        elif command[2][0]=="var":
+            temp_code.append("SET " + str(first_const))
+            temp_code.append("SUBT " + str(second_mem))
+            temp_code.append("JZERO [not]")
+            temp_code.append("SET " + str(first_const))
+            temp_code.append("STORE " + str(1))
+            temp_code.append("LOAD " + str(second_mem))
+            temp_code.append("SUBT " + str(1))
+            temp_code.append("JZERO [not]")
         else:  
-            if not int(command[2][0]) == int(command[1][0]):
+            if not int(first_const) == int(second_const):
                 temp_code.append("JZERO [not]")
+
     return temp_code
 
         
