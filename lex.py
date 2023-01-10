@@ -214,10 +214,10 @@ class CompilatorParser(Parser):
     def command(self, p):
         if not self.in_command:
             if self.in_procedure:
-                self.proc_command_list.append(["assign", p[0], p[2]])
+                self.proc_command_list.append(["ASSIGN", p[0], p[2]])
             else:
-                self.commands_list.append(["assign", p[0], p[2]])
-        return "assign", p[0], p[2]
+                self.commands_list.append(["ASSIGN", p[0], p[2]])
+        return "ASSIGN", p[0], p[2]
 
     @_('IF condition THEN commands2 ELSE commands2 ENDIF')
     def command(self, p):
@@ -292,7 +292,7 @@ class CompilatorParser(Parser):
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command2(self, p):
-        return "assign", p[0], p[2]
+        return "ASSIGN", p[0], p[2]
 
     @_('IF condition THEN commands2 ELSE commands2 ENDIF')
     def command2(self, p):

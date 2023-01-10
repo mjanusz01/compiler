@@ -42,6 +42,9 @@ class Var:
     def set_proc_name(self, proc_name):
         self.proc_name = proc_name
 
+    def set_memory_offset(self,memory_offset):
+        self.memory_offset = memory_offset
+
     def get_name(self):
         return self.name
 
@@ -49,7 +52,7 @@ class Var:
         return self.memory_offset
 
     def __repr__(self):
-        return "var name: " + str(self.name) + " memory : " + str(self.memory_offset) + " proc : " + str(self.in_procedure) + " proc name : " + str(self.proc_name)
+        return self.name
 
 class SymbolTable:
     def __init__(self):
@@ -61,12 +64,11 @@ class SymbolTable:
         self.variables = self.variables + [Var(name, self.memory_offset, in_proc)]
         self.memory_offset = self.memory_offset + 1
 
-    def find_variable(self, name):
+    def find_variable(self,name):
         for var in self.variables:
-            if var.get_name == name:
-                return name
-            else:
-                return "none name"
+            if str(var) == name:
+                return var
+        return "none name"
     
     def add_procedure(self,name):
         self.procedures = self.procedures + [Procedure(name)]

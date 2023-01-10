@@ -55,4 +55,3 @@ def ifelse(command,symbol_table,line_count):
 
     return final_code
 
-    
