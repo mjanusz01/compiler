@@ -217,6 +217,7 @@ class CompilatorParser(Parser):
             if self.in_procedure:
                 self.proc_command_list = self.proc_command_list + ["ASSIGN", p[0], p[2]]
             else:
+                self.commands_list = self.commands_list + ["ASSIGN", p[0], p[2]]
                 self.commands_list.append(["ASSIGN", p[0], p[2]])
         return "ASSIGN", p[0], p[2]
 
