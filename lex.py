@@ -2,6 +2,7 @@ from sly import Lexer, Parser
 from symbol_table import SymbolTable, Var, Procedure
 from code_generator import CodeGenerator
 import sys
+import utils
 
 class CompilatorLexer(Lexer):
     
@@ -209,17 +210,19 @@ class CompilatorParser(Parser):
 
     @_('commands2 command2')
     def commands2(self, p):
-        return p[0], p[1]
+        print("p0 = ", p[0])
+        print("p1 = ", p[1])
+        print("p0 + p1 = ", [p[0]] + [p[1]])
+        return p[0] + p[1]
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command(self, p):
         if not self.in_command:
             if self.in_procedure:
-                self.proc_command_list = self.proc_command_list + ["ASSIGN", p[0], p[2]]
+                self.proc_command_list = self.proc_command_list + [["ASSIGN", p[0], p[2]]]
             else:
-                self.commands_list = self.commands_list + ["ASSIGN", p[0], p[2]]
-                self.commands_list.append(["ASSIGN", p[0], p[2]])
-        return "ASSIGN", p[0], p[2]
+                self.commands_list = self.commands_list + [["ASSIGN", p[0], p[2]]]
+        return [["ASSIGN", p[0], p[2]]]
 
     @_('IF condition THEN commands2 ELSE commands2 ENDIF')
     def command(self, p):
@@ -227,20 +230,20 @@ class CompilatorParser(Parser):
             self.in_command = True
             if self.in_procedure:
                 print("appendujemy")
-                self.proc_command_list.append(["ifelse", p[1], p[3], p[5]])
+                self.proc_command_list = self.proc_command_list + [["IFELSE", p[1], p[3], p[5]]]
             else:
-                self.commands_list.append(["ifelse", p[1], p[3], p[5]])
+                self.commands_list = self.commands_list + [["IFELSE", p[1], p[3], p[5]]]
             self.in_command = False
-        return "ifelse", p[1], p[3], p[5]
+        return [["IFELSE", p[1], p[3], p[5]]]
 
     @_('IF condition THEN commands2 ENDIF')
     def command(self, p):
         if not self.in_command:
             self.in_command = True
             if self.in_procedure:
-                self.proc_command_list.append(["IF", p[1], p[3]])
+                self.proc_command_list = self.proc_command_list + [["IF", p[1], p[3]]]
             else:
-                self.commands_list.append(["IF", p[1], p[3]])
+                self.commands_list = self.commands_list + [["IF", p[1], p[3]]]
             self.in_command = False
 
     @_('WHILE condition DO commands2 ENDWHILE')
@@ -258,9 +261,9 @@ class CompilatorParser(Parser):
     def command(self, p):
         print("AKTUALNIE ",self.in_procedure)
         if self.in_procedure:
-            self.proc_command_list.append(["until", p[1], p[3]])
+            self.proc_command_list = self.proc_command_list + [["UNTIL", p[1], p[3]]]
         else:
-            self.commands_list.append(["until",p[1], p[3]])
+            self.commands_list = self.commands_list + [["UNTIL",p[1], p[3]]]
         return "UNTILREPEAT"
     
     @_('proc_head_execute SEMICOLON')
@@ -287,30 +290,30 @@ class CompilatorParser(Parser):
     def command(self, p):
         print("WRITE aktualnie")
         if self.in_procedure:
-            self.proc_command_list.append(["WRITE", p[1]])
+            self.proc_command_list = self.proc_command_list + [["WRITE", p[1]]]
         else:
-            self.commands_list.append(["WRITE", p[1]])
-        return "WRITE", p[1]
+            self.commands_list = self.commands_list + [["WRITE", p[1]]]
+        return [["WRITE", p[1]]]
 
     @_('identifier ASSIGN expression SEMICOLON')
     def command2(self, p):
-        return "ASSIGN", p[0], p[2]
+        return [["ASSIGN", p[0], p[2]]]
 
     @_('IF condition THEN commands2 ELSE commands2 ENDIF')
     def command2(self, p):
-        return "ifelse", p[1], p[3], p[5]
+        return [["IFELSE", p[1], p[3], p[5]]]
 
     @_('IF condition THEN commands2 ENDIF')
     def command2(self, p):
-        return "if", p[1], p[3]
+        return [["IF", p[1], p[3]]]
 
     @_('WHILE condition DO commands2 ENDWHILE')
     def command2(self, p):
-        return "WHILE", p[1], p[3]
+        return [["WHILE", p[1], p[3]]]
 
     @_('REPEAT commands2 UNTIL condition SEMICOLON')
     def command2(self, p):
-        return "UNTIL", p[1], p[3]
+        return [["UNTIL", p[1], p[3]]]
     
     @_('proc_head_execute SEMICOLON')
     def command2(self, p):
@@ -324,7 +327,7 @@ class CompilatorParser(Parser):
 
     @_('WRITE value SEMICOLON')
     def command2(self, p):
-        return "WRITE", p[1]
+        return [["WRITE", p[1]]]
 
     @_('value')
     def expression(self, p):
@@ -403,9 +406,15 @@ print("comm")
 #print(pars.processed_procedure)
 #print(pars.proc_command_list)
 #pars.symbol_table.print_vars()
-
+print("LISTA KOMEND")
 pars.write_commands()
 
 code_gen = CodeGenerator(pars.symbol_table)
-code_gen.generate_code(pars.commands_list)
+code_fin = code_gen.generate_code(pars.commands_list)
 
+print("ostateczna lista")
+for command in code_fin:
+    print(command)
+
+print("AAAAA")
+utils.output_print(code_fin)

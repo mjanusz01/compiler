@@ -1,9 +1,10 @@
 PROGRAM IS
 VAR x,i
 BEGIN
-    x:=10;
+    x:=10+2;
     i:=0;
     IF i>x THEN
         WRITE x;
+        i:=2+x;
     ENDIF
 END

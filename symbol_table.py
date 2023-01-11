@@ -55,10 +55,12 @@ class Var:
         return self.name
 
 class SymbolTable:
+
     def __init__(self):
         self.variables = []
         self.procedures = []
-        self.memory_offset = 3
+        self.memory_offset = 10
+        self.lc = 0
 
     def add_variable(self, name, in_proc):
         self.variables = self.variables + [Var(name, self.memory_offset, in_proc)]
@@ -92,6 +94,14 @@ class SymbolTable:
                 print(com)
                 print(" ")
             print(" ")
+
+    def append_code(self,code,str):
+        code.append(str)
+        self.lc += 1
+
+    def get_lc(self):
+        return self.lc
+
 
 
     

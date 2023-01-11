@@ -1,0 +1,11 @@
+PROGRAM IS
+VAR x,i
+BEGIN
+    x:=10;
+    i:=1;
+    REPEAT
+        i:=i+1;
+        x:=x+1000;
+        WRITE i;
+    UNTIL x>3;
+END

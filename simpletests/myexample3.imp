@@ -1,0 +1,13 @@
+PROGRAM IS
+VAR x,i
+BEGIN
+    x:=10+2;
+    i:=0;
+    IF i>x THEN
+        WRITE x;
+        i:=i+1;
+    ELSE
+        WRITE i;
+        x:=x+1;
+    ENDIF
+END

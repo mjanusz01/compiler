@@ -1,4 +1,4 @@
-def write(command,symbol_table,line_count):
+def write(command,symbol_table):
     temp_code = []
     if(command[1][0]=="var"):
         temp_code.append("PUT " + str(symbol_table.find_variable(command[1][1]).get_memory_offset()))
